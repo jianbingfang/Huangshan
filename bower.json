@@ -1,0 +1,23 @@
+{
+  "name": "huangshan",
+  "description": "",
+  "main": "",
+  "license": "MIT",
+  "homepage": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular-material": "^1.1.1",
+    "ng-file-upload": "^12.2.13",
+    "zepto": "^1.1.6",
+    "weui": "^1.1.0",
+    "bootstrap-table": "~1.11.1",
+    "jQuery": "~3.1.1",
+    "bootstrap": "~3.3.7"
+  }
+}

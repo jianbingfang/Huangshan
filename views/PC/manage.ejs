@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset='UTF-8' />
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="/bower_components/bootstrap-table/dist/bootstrap-table.min.css">
+  <link rel="stylesheet" href="//rawgit.com/vitalets/x-editable/master/dist/bootstrap3-editable/css/bootstrap-editable.css">
+  <style>
+  body {
+    padding-top: 50px;
+  }
+  .starter-template {
+    padding: 40px 15px;
+    text-align: center;
+  }
+  </style>
+</head>
+
+<body>
+  <nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <span class="navbar-brand" href="#">当前用户: <%=user.id%></span>
+      </div>
+    </div>
+  </nav>
+  <div class="container">
+    <div class="starter-template">
+      <h1>城管网格案件管理系统</h1>
+    </div>
+    <table id="table"
+           data-url="/task/all"
+           data-toggle="table"
+           data-detail-view="true"
+           data-detail-formatter="detailFormatter"
+           data-sort-name="createTime"
+           data-sort-order="desc"
+           data-show-export="true"
+           data-search="true"
+           data-show-refresh="true"
+           data-pagination="true">
+      <thead style="background:rgba(220, 220, 220, 0.31);">
+      <tr>
+        <th data-field="username" data-sortable="true">姓名</th>
+        <th data-field="createTime" data-sortable="true" data-formatter="dateFormatter">时间</th>
+        <th data-field="auditAdmin" data-formatter="auditAdminStatusFormatter" data-cell-style="statusStyle">审核（管理员）</th>
+        <th data-field="auditLeader" data-formatter="auditLeaderStatusFormatter" data-cell-style="statusStyle">审核（领导）</th>
+        <th data-field="accept" data-formatter="acceptStatusFormatter" data-cell-style="statusStyle">接收</th>
+        <th data-field="feedback" data-formatter="feedbackStatusFormatter" data-cell-style="statusStyle">反馈</th>
+        <th data-field="verify" data-formatter="verifyStatusFormatter" data-cell-style="statusStyle">确认</th>
+      </tr>
+      </thead>
+    </table>
+  </div>
+  <script src="/bower_components/jquery/dist/jquery.min.js"></script>
+  <script src="/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script src="/bower_components/bootstrap-table/dist/bootstrap-table.min.js"></script>
+  <script src="/bower_components/bootstrap-table/dist/locale/bootstrap-table-zh-CN.min.js"></script>
+  <script src="/bower_components/bootstrap-table/dist/extensions/editable/bootstrap-table-editable.min.js"></script>
+  <script src="//rawgit.com/vitalets/x-editable/master/dist/bootstrap3-editable/js/bootstrap-editable.js"></script>
+  <script src="/bower_components/bootstrap-table/dist/extensions/export/bootstrap-table-export.min.js"></script>
+  <script src="//rawgit.com/hhurz/tableExport.jquery.plugin/master/tableExport.js"></script>
+  <script src="/javascripts/pc/manage.js"></script>
+  <script>
+    var USER_ADMIN = '1';
+    var USER_LEAD = '0';
+    var userType = '<%=user.type%>';
+    var bgTable = {
+        '1': 'lightgreen',
+        '0': 'initial',
+        '-1': 'pink'
+      };
+
+    function timeFormatter(timestamp) {
+      var d = new Date(timestamp);
+      return d.toLocaleDateString() + ' - ' + d.toLocaleTimeString();
+    }
+
+    function dateFormatter(timestamp) {
+      var d = new Date(timestamp);
+      return d.toLocaleDateString();
+    }
+
+    $('#table').on('post-body.bs.table', function () {
+      $('.audit-status').editable();
+      $('.audit-status').on('save', function(e, params) {
+        console.log(e, params);
+        $(e.target.parentElement).css('background', bgTable[params.newValue]);
+      });
+    });
+
+    var statusListStr = [
+      '[',
+      '  { value: 0, text: \'待定\' },',
+      '  { value: -1, text: \'未通过\' },',
+      '  { value: 1, text: \'通过\' }',
+      ']'
+    ].join('');
+
+    function statusFormatterGenerator(name) {
+      return function(status, row, index) {
+        var disabled = true;
+        if ((userType == USER_ADMIN && name == 'auditAdmin')
+        || (userType == USER_LEAD && name == 'auditLeader')) {
+          disabled = false;
+        }
+        return '<a href="#" class="audit-status" data-type="select" data-pk="'+row.id+'" data-name="'+name+'" data-url="/task/updatestatus" data-source="'+statusListStr+'" data-value="'+status+'" data-disabled="'+disabled+'" data-success="onStatusUpdateSuccess" data-title="审核状态"></a>';
+      }
+    }
+
+    var auditAdminStatusFormatter = statusFormatterGenerator('auditAdmin');
+    var auditLeaderStatusFormatter = statusFormatterGenerator('auditLeader');
+    var acceptStatusFormatter = statusFormatterGenerator('accept');
+    var feedbackStatusFormatter = statusFormatterGenerator('feedback');
+    var verifyStatusFormatter = statusFormatterGenerator('verify');
+
+    $.fn.editable.defaults.ajaxOptions = {type: "put"};
+
+    function statusStyle(value, row, index, field) {
+      return {
+        css: {"background": bgTable[value]}
+      };
+    }
+
+    function detailFormatter(index, row) {
+      var html = [];
+      html.push('<table>')
+      html.push('<tr>')
+      html.push('  <td><strong>姓名：</strong>' + row.username + '</td>')
+      html.push('  <td><strong>电话：</strong>' + row.phone + '</td>')
+      html.push('</tr>')
+      html.push('<tr>')
+      html.push('  <td><strong>主类别：</strong>' + row.mainCat + '</td>')
+      html.push('  <td><strong>次类别：</strong>' + row.subCat + '</td>')
+      html.push('</tr>')
+      html.push('<tr>')
+      html.push('  <td colspan=2><strong>创建时间：</strong>' + timeFormatter(row.createTime) + '</td>')
+      html.push('</tr>')
+      html.push('<tr>')
+      html.push('  <td colspan=2><strong>描述：</strong>' + row.description + '</td>')
+      html.push('</tr>')
+      html.push('<tr style="background:rgba(245, 245, 245, 0.52);">')
+      html.push('  <td colspan=2>')
+      row.imgPaths.forEach(function(path, i) {
+        html.push('  <img src="' + path.thumbnail + '" style="width:120px;height:120px;padding:10px;cursor:pointer;" data-toggle="modal" data-target="#'+path.userId+'"/>')
+        if (i === 0) {
+          html.push('  <div id="'+path.userId+'" class="modal fade bs-example-modal" tabindex="-1" role="dialog"><div class="modal-dialog" role="document"><div class="modal-content">')
+          html.push(genImageSlider(row.imgPaths));
+          html.push('  </div></div></div>');
+        }
+      })
+      html.push('  </td>')
+      html.push('</tr>')
+      // if ((userType == USER_ADMIN && row.auditAdmin == 0)
+      // || (userType == USER_LEAD && row.auditLeader == 0)) {
+      //   html.push('<tr>')
+      //   html.push('  <td colspan=2>')
+      //   html.push('    <button type="button" onclick="auditPass(\'' + row.id + '\')" data-loading-text="Loading..." class="btn btn-success" autocomplete="off" style="margin: 10px;">')
+      //   html.push('      审核通过');
+      //   html.push('    </button>')
+      //   html.push('    <button type="button" onclick="auditReject(\'' + row.id + '\')" data-loading-text="Loading..." class="btn btn-danger" autocomplete="off" style="margin: 10px;">')
+      //   html.push('      审核不通过');
+      //   html.push('    </button>')
+      //   html.push('  </td>')
+      //   html.push('</tr>')
+      // }
+      return html.join('');
+    }
+
+    function audit(taskId, value) {
+      var property = {};
+      if (userType == USER_ADMIN) {
+        property.auditAdmin = value;
+      } else if (userType == USER_LEAD) {
+        property.auditLeader = value;
+      }
+
+      $.ajax({
+        url: '/task/' + taskId,
+        data: property,
+        type: 'PUT',
+        success: function(res) {
+          console.log(res);
+        },
+        error: function(err) {
+          console.error(err);
+          alert(err.message);
+        }
+      });
+    }
+
+    function auditPass(taskId) {
+      audit(taskId, 1);
+    }
+
+    function auditReject(taskId) {
+      audit(taskId, -1);
+    }
+
+    function genImageSlider(imgPaths) {
+      var html = '';
+      html += '<div id="carousel-example-generic" class="carousel slide" data-ride="carousel">'
+      html += '  <ol class="carousel-indicators">'
+      imgPaths.forEach(function(v, i) {
+        html += '  <li data-target="#carousel-example-generic" data-slide-to="' + i + '"' + (i==0?'class="active">':'') + '</li>'
+      });
+      html += '  </ol>'
+      html += '  <div class="carousel-inner" role="listbox">'
+      imgPaths.forEach(function(path, i) {
+        html += '  <div class="item' + (i==0?' active':'') + '">'
+        html += '    <img src="' + (path.original || path.thumbnail) + '">'
+        html += '    <div class="carousel-caption">'
+        html += '    </div>'
+        html += '  </div>'
+      });
+      html += '  </div>'
+      html += '  <a class="left carousel-control" href="#carousel-example-generic" role="button" data-slide="prev">'
+      html += '    <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>'
+      html += '    <span class="sr-only">Previous</span>'
+      html += '  </a>'
+      html += '  <a class="right carousel-control" href="#carousel-example-generic" role="button" data-slide="next">'
+      html += '    <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>'
+      html += '    <span class="sr-only">Next</span>'
+      html += '  </a>'
+      html += '</div>'
+      return html;
+    }
+
+  </script>
+</body>
+
+</html>

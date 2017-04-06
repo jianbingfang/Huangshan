@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset='UTF-8' />
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="/bower_components/bootstrap-table/dist/bootstrap-table.min.css">
+  <link rel="stylesheet" href="/stylesheets/login.css" />
+</head>
+
+<body>
+  <div class="container">
+    <form id="login-form" action="/user/login" method="post" class="form-signin">
+      <h2 class="form-signin-heading">城管网格案件管理系统</h2>
+      <label for="inputAccount" class="sr-only">账号</label>
+      <input type="text" id="inputAccount" name="username" class="form-control" placeholder="账号" autofocus="">
+      <label for="inputPassword" class="sr-only">密码</label>
+      <input type="password" id="inputPassword" name="password" class="form-control" placeholder="密码">
+      <button class="btn btn-lg btn-primary btn-block" type="submit">登录</button>
+      <span style="color:red; margin-top:10px;"><%= errmsg %><span>
+    </form>
+  </div>
+  
+  <script src="/bower_components/jquery/dist/jquery.min.js"></script>
+  <script src="/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script src="/bower_components/bootstrap-table/dist/bootstrap-table.min.js"></script>
+  <script src="/javascripts/pc/login.js"></script>
+</body>
+
+</html>
