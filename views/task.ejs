@@ -10,11 +10,27 @@
 
 <body ontouchstart>
   <div class="page" style="opacity: 1">
-    <div class="page__bd">
-      <h1 style="margin: 10px;">
-        <%= newTask ? '新建任务' : '查看任务' %>
+    <h1 class="page__bd">
+      <% if (newTask) {%>
+      <h1 style="padding: 0px 10px 0 15px;">
+        新建任务
       </h1>
-    </div>
+      <% } else { %>
+        <% if (task.auditAdmin == -1 || task.auditLeader == -1) { %>
+          <h1 style="padding: 0px 10px 0 15px; background: pink;">
+            未通过
+          </h1>
+          <% } else if (task.auditAdmin == 1 && task.auditLeader == 1) {%>
+          <h1 style="padding: 0px 10px 0 15px; background: lightgreen;">
+            审核通过
+          </h1>
+          <% } else {%>
+          <h1 style="padding: 0px 10px 0 15px; background: lightcyan;">
+            审核中
+          </h1>
+          <% } %>
+        <% } %>
+      </h1>
     <div class="weui-gallery" id="gallery">
       <span class="weui-gallery__img" id="galleryImg"></span>
       <div class="weui-gallery__opr">
