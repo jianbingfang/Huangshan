@@ -52,11 +52,11 @@
       <tr>
         <th data-field="username" data-sortable="true">姓名</th>
         <th data-field="createTime" data-sortable="true" data-formatter="dateFormatter">时间</th>
-        <th data-field="auditAdmin" data-formatter="auditAdminStatusFormatter" data-cell-style="statusStyle">审核（管理员）</th>
-        <th data-field="auditLeader" data-formatter="auditLeaderStatusFormatter" data-cell-style="statusStyle">审核（领导）</th>
-        <th data-field="accept" data-formatter="acceptStatusFormatter" data-cell-style="statusStyle">接收</th>
-        <th data-field="feedback" data-formatter="feedbackStatusFormatter" data-cell-style="statusStyle">反馈</th>
-        <th data-field="verify" data-formatter="verifyStatusFormatter" data-cell-style="statusStyle">确认</th>
+        <th data-field="hasAuditAdmin" data-formatter="hasAuditAdminStatusFormatter" data-cell-style="statusStyle">审核（管理员）</th>
+        <th data-field="hasAuditLead" data-formatter="hasAuditLeadStatusFormatter" data-cell-style="statusStyle">审核（领导）</th>
+        <th data-field="hasAccept" data-formatter="hasAcceptStatusFormatter" data-cell-style="statusStyle">接收</th>
+        <th data-field="hasFeedback" data-formatter="hasFeedbackStatusFormatter" data-cell-style="statusStyle">反馈</th>
+        <th data-field="hasConfirm" data-formatter="hasConfirmStatusFormatter" data-cell-style="statusStyle">确认</th>
       </tr>
       </thead>
     </table>
@@ -106,22 +106,34 @@
       ']'
     ].join('');
 
-    function statusFormatterGenerator(name) {
+    function auditStatusFormatterGenerator(name) {
       return function(status, row, index) {
         var disabled = true;
-        if ((userType == USER_ADMIN && name == 'auditAdmin')
-        || (userType == USER_LEAD && name == 'auditLeader')) {
+        if ( (row.hasFeedback && name === 'hasConfirm')
+          || (userType === USER_ADMIN && name === 'hasAuditAdmin')
+          || (userType === USER_LEAD && name === 'hasAuditLead')) {
           disabled = false;
         }
         return '<a href="#" class="audit-status" data-type="select" data-pk="'+row.id+'" data-name="'+name+'" data-url="/task/updatestatus" data-source="'+statusListStr+'" data-value="'+status+'" data-disabled="'+disabled+'" data-success="onStatusUpdateSuccess" data-title="审核状态"></a>';
       }
     }
 
-    var auditAdminStatusFormatter = statusFormatterGenerator('auditAdmin');
-    var auditLeaderStatusFormatter = statusFormatterGenerator('auditLeader');
-    var acceptStatusFormatter = statusFormatterGenerator('accept');
-    var feedbackStatusFormatter = statusFormatterGenerator('feedback');
-    var verifyStatusFormatter = statusFormatterGenerator('verify');
+    function taskStatusFormatterGenerator(name) {
+      return function(status, row, index) {
+        switch(row[name]) {
+          case 1:
+            return '是';
+          default:
+            return '-';
+        }
+      }
+    }
+
+    var hasAuditAdminStatusFormatter = auditStatusFormatterGenerator('hasAuditAdmin');
+    var hasAuditLeadStatusFormatter = auditStatusFormatterGenerator('hasAuditLead');
+    var hasAcceptStatusFormatter = taskStatusFormatterGenerator('hasAccept');
+    var hasFeedbackStatusFormatter = taskStatusFormatterGenerator('hasFeedback');
+    var hasConfirmStatusFormatter = auditStatusFormatterGenerator('hasConfirm');
 
     $.fn.editable.defaults.ajaxOptions = {type: "put"};
 
@@ -160,8 +172,8 @@
       })
       html.push('  </td>')
       html.push('</tr>')
-      // if ((userType == USER_ADMIN && row.auditAdmin == 0)
-      // || (userType == USER_LEAD && row.auditLeader == 0)) {
+      // if ((userType == USER_ADMIN && row.hasAuditAdmin == 0)
+      // || (userType == USER_LEAD && row.hasAuditLead == 0)) {
       //   html.push('<tr>')
       //   html.push('  <td colspan=2>')
       //   html.push('    <button type="button" onclick="auditPass(\'' + row.id + '\')" data-loading-text="Loading..." class="btn btn-success" autocomplete="off" style="margin: 10px;">')
@@ -179,9 +191,9 @@
     function audit(taskId, value) {
       var property = {};
       if (userType == USER_ADMIN) {
-        property.auditAdmin = value;
+        property.hasAuditAdmin = value;
       } else if (userType == USER_LEAD) {
-        property.auditLeader = value;
+        property.hasAuditLead = value;
       }
 
       $.ajax({

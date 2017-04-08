@@ -16,11 +16,11 @@ var TABLE = dbUtil.TABLE;
 /* GET users listing. */
 router.get('/all', function (req, res, next) {
   res.send(dbUtil._tasks.map(v => _.assign(v, {
-    // auditAdmin: 0,
-    // auditLeader: 0,
-    // accept: 0,
-    // feedback: 0,
-    // verify: 0
+    // hasAuditAdmin: 0,
+    // hasAuditLead: 0,
+    // hasAccept: 0,
+    // hasFeedback: 0,
+    // hasConfirm: 0
   })));
 });
 
@@ -47,20 +47,29 @@ router.get('/:taskId?', function (req, res, next) {
 
 router.post('/', function (req, res, next) {
   var task = {};
-  task.userId = req.body.userId;
-  task.username = req.body.username;
-  task.phone = req.body.phone;
-  task.mainCat = req.body.mainCat;
-  task.subCat = req.body.subCat;
-  task.description = req.body.description;
-  task.imgServerIds = req.body.imgServerIds;
-  task.createTime = Date.now();
-  task.auditAdmin = 0;
-  task.auditLeader = 0;
-  task.accept = 0;
-  task.feedback = 0;
-  task.verify = 0;
-  task.imgPaths = [];
+  var taskId = req.body.taskId;
+  var createNewTask = _.isUndefined(taskId);
+  if (createNewTask) {
+    task.userId = req.body.userId;
+    task.username = req.body.username;
+    task.phone = req.body.phone;
+    task.mainCat = req.body.mainCat;
+    task.subCat = req.body.subCat;
+    task.description = req.body.description;
+    task.imgServerIds = req.body.imgServerIds;
+    task.createTime = Date.now();
+    task.hasAuditAdmin = 0;
+    task.hasAuditLead = 0;
+    task.hasAccept = 0;
+    task.hasFeedback = 0;
+    task.hasConfirm = 0;
+    task.imgPaths = [];
+    task.feedback = undefined;
+    task.feedbackImgPaths = [];
+  } else {
+    task.feedback = req.body.feedback;
+    task.imgServerIds = req.body.imgServerIds;
+  }
 
   if (task.imgServerIds) {
     wxUtil.getAccessToken(function (err, access_token) {
@@ -99,10 +108,17 @@ router.post('/', function (req, res, next) {
 
           var imgUriPath = `/images/upload/${dateStr}/${imgFile}`;
           var thumbnailUriPath = `/images/thumbnail/${dateStr}/${imgFile}`;
-          task.imgPaths.push({
-            original: imgUriPath,
-            thumbnail: thumbnailUriPath
-          });
+          if (createNewTask) {
+            task.imgPaths.push({
+              original: imgUriPath,
+              thumbnail: thumbnailUriPath
+            });
+          } else {
+            task.feedbackImgPaths.push({
+              original: imgUriPath,
+              thumbnail: thumbnailUriPath
+            });
+          }
         } catch (e) {
           return res.send({
             status: 101,
@@ -110,7 +126,16 @@ router.post('/', function (req, res, next) {
           });
         }
       }))).then(() => {
-        var savedTask = dbUtil.save(TABLE.Task, task);
+        var savedTask;
+        if (createNewTask) {
+          savedTask = dbUtil.save(TABLE.Task, task);
+        } else {
+          var prop = {};
+          prop['hasFeedback'] = 1;
+          prop['feedback'] = task.feedback;
+          prop['feedbackImgPaths'] = task.feedbackImgPaths;
+          savedTask = dbUtil.updateById(TABLE.Task, taskId, prop);
+        }
         res.send({
           status: 0,
           msg: "",
@@ -119,7 +144,15 @@ router.post('/', function (req, res, next) {
       });
     });
   } else {
-    var savedTask = dbUtil.save(TABLE.Task, task);
+    var savedTask;
+    if (createNewTask) {
+      savedTask = dbUtil.save(TABLE.Task, task);
+    } else {
+      var prop = {};
+      prop['hasFeedback'] = 1;
+      prop['feedback'] = task.feedback;
+      savedTask = dbUtil.updateById(TABLE.Task, taskId, prop);
+    }
     res.send({
       status: 0,
       msg: "",

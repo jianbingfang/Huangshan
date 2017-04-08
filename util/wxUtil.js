@@ -10,9 +10,9 @@ var userInfoCache = {};
 
 exports.genTaskHtml = function (task) {
   var statusSnippet = '';
-  if (task.auditAdmin == -1 || task.auditLeader == -1) {
+  if (task.hasAuditAdmin == -1 || task.hasAuditLead == -1) {
     statusSnippet = '<div class="weui-media-box__hd status-reject">未通过</div>';
-  } else if (task.auditAdmin == 1 && task.auditLeader == 1) {
+  } else if (task.hasAuditAdmin == 1 && task.hasAuditLead == 1) {
     statusSnippet = '<div class="weui-media-box__hd status-pass">通过</div>';
   } else {
     statusSnippet = '<div class="weui-media-box__hd status-audit">审核中</div>';

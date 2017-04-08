@@ -16,21 +16,34 @@
         新建任务
       </h1>
       <% } else { %>
-        <% if (task.auditAdmin == -1 || task.auditLeader == -1) { %>
-          <h1 style="padding: 0px 10px 0 15px; background: pink;">
-            未通过
+        <% if (task.hasConfirm == 1) { %>
+          <h1 style="padding: 0px 10px 0 15px">
+            <i class="weui-icon-success" style="margin-top: -5px;"></i>
+            任务已完成
           </h1>
-          <% } else if (task.auditAdmin == 1 && task.auditLeader == 1) {%>
-          <h1 style="padding: 0px 10px 0 15px; background: lightgreen;">
+        <% } else if (task.hasAuditAdmin == -1 || task.hasAuditLead == -1) { %>
+          <h1 style="padding: 0px 10px 0 15px">
+            <i class="weui-icon-warn" style="margin-top: -5px;"></i>
+            审核未通过
+          </h1>
+        <% } else if (task.hasAuditAdmin == 1 && task.hasAuditLead == 1) {%>
+          <h1 style="padding: 0px 10px 0 15px;">
+            <i class="weui-icon-success-no-circle" style="margin-top: -5px;"></i>
             审核通过
+            <% if (task.hasAccept == 0) { %>
+            <a id="btn-accept-task" href="javascript:;" class="weui-btn weui-btn_mini weui-btn_primary" style="float: right;margin-top: 10px;">接收</a>
+            <% } else {%>
+            <a href="javascript:;" class="weui-btn weui-btn_mini weui-btn_primary weui-btn_disabled" style="float: right;margin-top: 10px;color:black;">已接收</a>
+            <% } %>
           </h1>
-          <% } else {%>
-          <h1 style="padding: 0px 10px 0 15px; background: lightcyan;">
+        <% } else {%>
+          <h1 style="padding: 0px 10px 0 15px;">
+            <i class="weui-icon-waiting" style="margin-top: -5px;"></i>
             审核中
           </h1>
-          <% } %>
         <% } %>
-      </h1>
+      <% } %>
+    </h1>
     <div class="weui-gallery" id="gallery">
       <span class="weui-gallery__img" id="galleryImg"></span>
       <div class="weui-gallery__opr">
@@ -46,7 +59,7 @@
       <% } %>
 
       <input id="userId" value="<%= user.id%>" style="visibility:hidden" />
-      <div class="weui-cells__title">表单</div>
+      <div class="weui-cells__title">基本信息</div>
       <div class="weui-cells weui-cells_form">
         <div class="weui-cell">
           <div class="weui-cell__hd">
@@ -132,15 +145,65 @@
         </div>
       </div>
 
-      <!--<div class="weui-cells__tips">请填写描述</div>-->
+      <% if (newTask) { %>
       <div class="button_sp_area" style="margin: 10px 10px 200px 10px">
-        <a style="display:<%= newTask ? '' : 'none' %>" class="weui-btn weui-btn_primary" href="javascript:" id="btn-submit">提交</a>
-        <!--<a class="weui-btn weui-btn_default" href="javascript:" id="btn-cancel">保存</a>-->
+        <a class="weui-btn weui-btn_primary" href="javascript:" id="btn-submit">提交</a>
       </div>
+      <% } %>
+
+      <% if (!newTask && task.hasAccept == 1) { %>
+      <%   var isFeedbackEditable = task.hasConfirm != 1;  %>
+      <div class="weui-cells__title">反馈信息</div>
+      <div class="weui-cells weui-cells_form">
+        <div class="weui-cell">
+          <div class="weui-cell__bd">
+            <textarea id="input-feedback" class="weui-textarea" placeholder="请输入文本" maxlength="200" rows="3"><%= task.feedback %></textarea>
+            <div class="weui-textarea-counter"><span id="feedback-length">0</span>/200</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="weui-cells weui-cells_form">
+        <div class="weui-cell">
+          <div class="weui-cell__bd">
+            <div class="weui-uploader">
+              <div class="weui-uploader__hd">
+                <p class="weui-uploader__title"><%= isFeedbackEditable ? '添加反馈图片' : '反馈图片' %></p>
+                <% if (isFeedbackEditable) { %>
+                <div class="weui-uploader__info"><span id="feedback-img-count">0</span>/4</div>
+                <% } %>
+              </div>
+              <div class="weui-uploader__bd">
+                <ul id="feedback-img-list" class="weui-uploader__files">
+                  <% if (task.feedbackImgPaths && task.feedbackImgPaths.length > 0) { %>
+                    <% for(var i in task.feedbackImgPaths) { %>
+                    <%   var imgPath = task.feedbackImgPaths[i] %>
+                    <li class="weui-uploader__file" style="background-image:url(<%=imgPath.thumbnail || imgPath.original%>)"></li>
+                    <% } %>
+                  <% } else if (!isFeedbackEditable) { %>
+                    <div class="weui-cells__title">无图片</div>
+                  <% } %>
+                </ul>
+                <% if (isFeedbackEditable) { %>
+                <div class="weui-uploader__input-box">
+                  <div id="feedback-img-input" class="weui-uploader__input" type="file" accept="image/*" multiple ></div>
+                </div>
+                <% } %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="button_sp_area" style="margin: 10px 10px 200px 10px">
+        <a class="weui-btn weui-btn_primary" href="javascript:" id="btn-submit-feedback">提交反馈</a>
+      </div>
+      <% } %>
     </div>
   </div>
 
-  <div class="js_dialog" id="dlg-success" style="display: none;">
+  <!-- dialogs -->
+  <div class="js_dialog" id="dlg-success" style="opacity: 0; display: none;">
     <div class="weui-mask"></div>
     <div class="weui-dialog">
       <div class="weui-dialog__bd">提交成功</div>
@@ -161,10 +224,40 @@
     </div>
   </div>
 
+  <div class="js_dialog" id="dialog-accept-task" style="opacity: 0; display: none;">
+    <div class="weui-mask"></div>
+    <div class="weui-dialog">
+      <div class="weui-dialog__hd"><strong class="weui-dialog__title">确认</strong></div>
+      <div class="weui-dialog__bd">是否接受该任务？</div>
+      <div class="weui-dialog__ft">
+        <a id="btn-cancel-accept" href="javascript:;" class="weui-dialog__btn weui-dialog__btn_default">取消</a>
+        <a id="btn-confirm-accept" href="javascript:;" class="weui-dialog__btn weui-dialog__btn_primary">确认</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="finishedToast" style="opacity: 0; display: none;">
+    <div class="weui-mask_transparent"></div>
+    <div class="weui-toast">
+      <i class="weui-icon-success-no-circle weui-icon_toast"></i>
+      <p class="weui-toast__content">提交成功</p>
+    </div>
+  </div>
+
+  <div id="loadingToast" style="opacity: 0; display: none;">
+    <div class="weui-mask_transparent"></div>
+    <div class="weui-toast">
+      <i class="weui-loading weui-icon_toast"></i>
+      <p class="weui-toast__content">提交中</p>
+    </div>
+  </div>
+
   <script src="/bower_components/zepto/zepto.min.js"></script>
   <script src="http://rawgit.com/progrape/weui.js/master/dist/weui.js"></script>
   <script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
   <script src="/javascripts/wechat/weixin.js"></script>
+  <script src="/javascripts/zepto/zepto.fx.js"></script>
+  <script src="/javascripts/zepto/zepto.fx_method.js"></script>
 
   <script>
     $(function() {
@@ -173,6 +266,9 @@
       var imgList = [];
       $("#input-description").on('input', function(e) {
         $("#description-length").text($("#input-description").val().length);
+      });
+      $("#input-feedback").on('input', function(e) {
+        $("#feedback-length").text($("#input-feedback").val().length);
       });
 
       $("#img-input").on('click', function() {
@@ -203,10 +299,45 @@
         });
       });
 
+      $("#feedback-img-input").on('click', function() {
+        if (imgList.length >= 4) {
+          return alert('最多只能上传4张图片');
+        }
+        wx.chooseImage({
+          count: 4,
+          sizeType: ['original', 'compressed'],
+          sourceType: ['album', 'camera'],
+          success: function(res) {
+            res.localIds.forEach(function(localId) {
+              wx.uploadImage({
+                localId: localId, // 需要上传的图片的本地ID，由chooseImage接口获得
+                isShowProgressTips: 1, // 默认为1，显示进度提示
+                success: function(res) {
+                  var serverId = res.serverId; // 返回图片的服务器端ID
+                  imgList.push({
+                    localId: localId,
+                    serverId: serverId
+                  });
+                  $("#feedback-img-list").append('<li id="img-' + serverId + '" localId="' + localId + '" class="weui-uploader__file" style="background-image:url(' + localId + ')"></li>');
+                  $("#feedback-img-count").text(imgList.length);
+                }
+              });
+            });
+          }
+        });
+      });
+
       $gallery = $("#gallery");
       $galleryImg = $("#galleryImg");
 
       $("#img-list").on("click", "li", function() {
+        $galleryImg.attr("style", this.getAttribute("style"));
+        $galleryImg.attr("imgid", this.getAttribute("id"));
+        $galleryImg.attr("localId", this.getAttribute("localId"));
+        $gallery.show();
+      });
+
+      $("#feedback-img-list").on("click", "li", function() {
         $galleryImg.attr("style", this.getAttribute("style"));
         $galleryImg.attr("imgid", this.getAttribute("id"));
         $galleryImg.attr("localId", this.getAttribute("localId"));
@@ -229,7 +360,7 @@
       $("#btn-submit").on("click", function() {
         var imgServerIds = [];
         imgList.forEach(function(img) {
-          imgServerIds.push(img.serverId)
+          imgServerIds.push(img.serverId);
         });
         $.post('/task', {
           "userId": $("#userId").val(),
@@ -241,14 +372,36 @@
           "imgServerIds": imgServerIds.join('\t')
         }, function(resp) {
           if (resp.status === 0) {
-            $("#dlg-success").show();
+            $("#dlg-success").fadeIn(200);
             userId = resp.data.userId;
             username = resp.data.username;
           } else {
             $("#error-msg").text(resp.msg);
-            $("#dlg-fail").show();
+            $("#dlg-fail").fadeIn(200);
           }
-        })
+        });
+      });
+
+      $("#btn-submit-feedback").on("click", function() {
+        var imgServerIds = [];
+        imgList.forEach(function(img) {
+          imgServerIds.push(img.serverId);
+        });
+
+        $.post('/task', {
+          "taskId": "<%= task.id %>",
+          "feedback": $("#input-feedback").val(),
+          "imgServerIds": imgServerIds.join('\t')
+        }, function(resp) {
+          if (resp.status === 0) {
+            $("#dlg-success").fadeIn(200);
+            userId = resp.data.userId;
+            username = resp.data.username;
+          } else {
+            $("#error-msg").text(resp.msg);
+            $("#dlg-fail").fadeIn(200);
+          }
+        });
       });
 
       $("#btn-return").on("click", function() {
@@ -256,9 +409,41 @@
       });
 
       $("#btn-confirm").on("click", function() {
-        $("#dlg-fail").hide();
+        $("#dlg-fail").fadeOut(200);
       });
 
+      $("#btn-accept-task").on("click", function() {
+        $("#dialog-accept-task").fadeIn(200);
+      });
+
+      $("#btn-cancel-accept").on('click', function() {
+        $("#dialog-accept-task").fadeOut(200);
+      });
+
+      $("#btn-confirm-accept").on('click', function() {
+        $("#dialog-accept-task").fadeOut(200);
+        $("#loadingToast").fadeIn(100);
+        $.ajax({
+          type: "PUT",
+          url: "/task/updatestatus",
+          data: JSON.stringify({
+            pk: "<%= task.id %>",
+            name: "hasAccept",
+            value: 1
+          }),
+          contentType: 'application/json',
+          success: function(data){
+            $("#loadingToast").fadeOut(100);
+            $("#finishedToast").fadeIn(100);
+            setTimeout(function() {
+              $("#finishedToast").fadeOut(100);
+            }, 2000);
+          },
+          error: function(xhr, type){
+            $("#dlg-fail").fadeIn(200);
+          }
+        });
+      });
     });
   </script>
 </body>
