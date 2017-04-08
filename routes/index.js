@@ -8,7 +8,7 @@ var dbUtil = require('../util/dbUtil');
 var moment = require('moment');
 var randomstring = require('randomstring');
 var TABLE = dbUtil.TABLE;
-var PAGE_SIZE = 2;
+var PAGE_SIZE = 10;
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
