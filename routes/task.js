@@ -45,6 +45,12 @@ router.get('/:taskId?', function (req, res, next) {
   });
 });
 
+router.delete('/:taskId?', function (req, res, next) {
+  var taskId = req.params.taskId;
+  var deletedTask = dbUtil.removeById(TABLE.Task, taskId);
+  res.send(deletedTask);
+});
+
 router.post('/', function (req, res, next) {
   var task = {};
   var taskId = req.body.taskId;
