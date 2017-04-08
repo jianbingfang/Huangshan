@@ -18,6 +18,9 @@
   .detail-view {
     background: #eee;
   }
+  a.remove {
+    color: #c9302c;
+  }
   </style>
 </head>
 
@@ -37,12 +40,12 @@
     </div>
   </nav>
   <div class="container">
-    <div class="starter-template">
-      <h1>城管网格案件管理系统</h1>
-    </div>
+    <h1>城管网格案件管理系统</h1>
     <table id="table"
            data-url="/task/all"
            data-toggle="table"
+           data-page-size="20"
+           data-page-list="[10, 20, 50, 100]"
            data-detail-view="true"
            data-detail-formatter="detailFormatter"
            data-sort-name="createTime"
@@ -60,6 +63,7 @@
         <th data-field="hasAccept" data-formatter="hasAcceptStatusFormatter" data-cell-style="statusStyle">已接收</th>
         <th data-field="hasFeedback" data-formatter="hasFeedbackStatusFormatter" data-cell-style="statusStyle">已反馈</th>
         <th data-field="hasConfirm" data-formatter="hasConfirmStatusFormatter" data-cell-style="statusStyle">确认</th>
+        <th data-align="center" data-events="operateEvents" data-formatter="operateFormatter">操作</th>
       </tr>
       </thead>
     </table>
@@ -82,6 +86,40 @@
         '0': 'initial',
         '-1': 'pink'
       };
+
+    window.operateEvents = {
+      'click .remove': function (e, value, row, index) {
+        var confirmed = confirm('是否删除该任务？');
+        if (confirmed) {
+          $.ajax({
+            url: '/task/' + row.id,
+            type: 'DELETE',
+            success: function(resp) {
+              if (resp) {
+                console.log('delete task: ', resp);
+                $('#table').bootstrapTable('remove', {
+                  field: 'id',
+                  values: [row.id]
+                });
+              } else {
+                alert('删除失败！');
+              }
+            },
+            error: function(err) {
+              alert(err.message);
+            }
+          });
+        }
+      }
+    };
+
+    function operateFormatter(value, row, index) {
+      return [
+        '<a class="remove" href="javascript:void(0)" title="Remove">',
+        '<i class="glyphicon glyphicon-remove"></i>',
+        '</a>'
+      ].join('');
+    }
 
     function timeFormatter(timestamp) {
       if (!timestamp) return '';
@@ -174,7 +212,9 @@
         html.push('<tr style="background:rgba(245, 245, 245, 0.52);">')
         html.push('  <td colspan=2>')
         row.imgPaths.forEach(function(path, i) {
-          html.push('  <img src="' + path.thumbnail + '" style="width:120px;height:120px;margin-right:10px;cursor:pointer;" data-toggle="modal" data-target="#'+path.userId+'"/>')
+          html.push('<a href="#" class="thumbnail" data-toggle="modal" data-target="#'+path.userId+'">')
+          html.push('  <img src="' + path.thumbnail + '" style="width:120px;height:120px;display:inline;"/>')
+          html.push('</a>')
           if (i === 0) {
             html.push('  <div id="'+path.userId+'" class="modal fade bs-example-modal" tabindex="-1" role="dialog"><div class="modal-dialog" role="document"><div class="modal-content">')
             html.push(genImageSlider(row.imgPaths));
@@ -193,13 +233,15 @@
           html.push('<tr>')
           html.push('  <td colspan=2>')
           row.feedbackImgPaths.forEach(function(path, i) {
-            html.push('  <img src="' + path.thumbnail + '" style="width:120px;height:120px;margin-right:10px;cursor:pointer;" data-toggle="modal" data-target="#'+path.userId+'"/>')
-            if (i === 0) {
-              html.push('  <div id="'+path.userId+'" class="modal fade bs-example-modal" tabindex="-1" role="dialog"><div class="modal-dialog" role="document"><div class="modal-content">')
-              html.push(genImageSlider(row.imgPaths));
-              html.push('  </div></div></div>');
-            }
-          })
+          html.push('<a href="#" class="thumbnail" data-toggle="modal" data-target="#'+path.userId+'">')
+          html.push('  <img src="' + path.thumbnail + '" style="width:120px;height:120px;display:inline;"/>')
+          html.push('</a>')
+          if (i === 0) {
+            html.push('  <div id="'+path.userId+'" class="modal fade bs-example-modal" tabindex="-1" role="dialog"><div class="modal-dialog" role="document"><div class="modal-content">')
+            html.push(genImageSlider(row.feedbackImgPaths));
+            html.push('  </div></div></div>');
+          }
+        })
           html.push('  </td>')
           html.push('</tr>')
         }
