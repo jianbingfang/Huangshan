@@ -40,4 +40,11 @@ router.post('/login', function (req, res, next) {
   }
 });
 
+router.get('/exist/:username', function (req, res, next) {
+  var username = req.params.username;
+  var user = dbUtil.getById(TABLE.User, username);
+  tokenCache.del(username);
+  res.redirect('/user');
+});
+
 module.exports = router;
