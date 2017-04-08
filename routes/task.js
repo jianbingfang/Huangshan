@@ -69,6 +69,7 @@ router.post('/', function (req, res, next) {
   } else {
     task.feedback = req.body.feedback;
     task.imgServerIds = req.body.imgServerIds;
+    task.feedbackImgPaths = [];
   }
 
   if (task.imgServerIds) {
