@@ -3,3 +3,6 @@ bower_components/
 test/
 .vscode/
 db.json
+
+public/upload/
+public/thumbnail/
