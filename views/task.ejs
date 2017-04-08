@@ -21,6 +21,11 @@
             <i class="weui-icon-success" style="margin-top: -5px;"></i>
             任务已完成
           </h1>
+        <% } else if (task.hasConfirm == -1) { %>
+          <h1 style="padding: 0px 10px 0 15px">
+            <i class="weui-icon-cancel" style="margin-top: -5px;"></i>
+            任务未完成
+          </h1>
         <% } else if (task.hasAuditAdmin == -1 || task.hasAuditLead == -1) { %>
           <h1 style="padding: 0px 10px 0 15px">
             <i class="weui-icon-warn" style="margin-top: -5px;"></i>
@@ -28,10 +33,12 @@
           </h1>
         <% } else if (task.hasAuditAdmin == 1 && task.hasAuditLead == 1) {%>
           <h1 style="padding: 0px 10px 0 15px;">
-            <i class="weui-icon-success-no-circle" style="margin-top: -5px;"></i>
+            <i class="weui-icon-info-circle" style="margin-top: -5px;"></i>
             审核通过
             <% if (task.hasAccept == 0) { %>
             <a id="btn-accept-task" href="javascript:;" class="weui-btn weui-btn_mini weui-btn_primary" style="float: right;margin-top: 10px;">接收</a>
+            <% } else if (task.hasFeedback == 1) {%>
+            <a href="javascript:;" class="weui-btn weui-btn_mini weui-btn_primary weui-btn_disabled" style="float: right;margin-top: 10px;color:black;">已反馈</a>
             <% } else {%>
             <a href="javascript:;" class="weui-btn weui-btn_mini weui-btn_primary weui-btn_disabled" style="float: right;margin-top: 10px;color:black;">已接收</a>
             <% } %>
@@ -152,12 +159,12 @@
       <% } %>
 
       <% if (!newTask && task.hasAccept == 1) { %>
-      <%   var isFeedbackEditable = task.hasConfirm != 1;  %>
+      <%   var isFeedbackEditable = task.hasFeedback == 0;  %>
       <div class="weui-cells__title">反馈信息</div>
       <div class="weui-cells weui-cells_form">
         <div class="weui-cell">
           <div class="weui-cell__bd">
-            <textarea id="input-feedback" class="weui-textarea" placeholder="请输入文本" maxlength="200" rows="3"><%= task.feedback %></textarea>
+            <textarea id="input-feedback" <%= isFeedbackEditable ? '' : 'disabled' %> class="weui-textarea" placeholder="请输入文本" maxlength="200" rows="3"><%= task.feedback %></textarea>
             <div class="weui-textarea-counter"><span id="feedback-length">0</span>/200</div>
           </div>
         </div>
@@ -168,7 +175,7 @@
           <div class="weui-cell__bd">
             <div class="weui-uploader">
               <div class="weui-uploader__hd">
-                <p class="weui-uploader__title"><%= isFeedbackEditable ? '添加反馈图片' : '反馈图片' %></p>
+                <p class="weui-uploader__title"><%= isFeedbackEditable ? '反馈图片上传' : '反馈图片' %></p>
                 <% if (isFeedbackEditable) { %>
                 <div class="weui-uploader__info"><span id="feedback-img-count">0</span>/4</div>
                 <% } %>
@@ -194,10 +201,11 @@
           </div>
         </div>
       </div>
-
+      <%   if (isFeedbackEditable) { %>
       <div class="button_sp_area" style="margin: 10px 10px 200px 10px">
         <a class="weui-btn weui-btn_primary" href="javascript:" id="btn-submit-feedback">提交反馈</a>
       </div>
+      <%   } %>
       <% } %>
     </div>
   </div>
