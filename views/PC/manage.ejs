@@ -6,7 +6,7 @@
   <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
   <link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css" />
   <link rel="stylesheet" href="/bower_components/bootstrap-table/dist/bootstrap-table.min.css">
-  <link rel="stylesheet" href="//rawgit.com/vitalets/x-editable/master/dist/bootstrap3-editable/css/bootstrap-editable.css">
+  <link rel="stylesheet" href="/bower_components/x-editable/dist/bootstrap3-editable/css/bootstrap-editable.css">
   <style>
   body {
     padding-top: 50px;
@@ -14,6 +14,9 @@
   .starter-template {
     padding: 40px 15px;
     text-align: center;
+  }
+  .detail-view {
+    background: #eee;
   }
   </style>
 </head>
@@ -54,8 +57,8 @@
         <th data-field="createTime" data-sortable="true" data-formatter="dateFormatter">时间</th>
         <th data-field="hasAuditAdmin" data-formatter="hasAuditAdminStatusFormatter" data-cell-style="statusStyle">审核（管理员）</th>
         <th data-field="hasAuditLead" data-formatter="hasAuditLeadStatusFormatter" data-cell-style="statusStyle">审核（领导）</th>
-        <th data-field="hasAccept" data-formatter="hasAcceptStatusFormatter" data-cell-style="statusStyle">接收</th>
-        <th data-field="hasFeedback" data-formatter="hasFeedbackStatusFormatter" data-cell-style="statusStyle">反馈</th>
+        <th data-field="hasAccept" data-formatter="hasAcceptStatusFormatter" data-cell-style="statusStyle">已接收</th>
+        <th data-field="hasFeedback" data-formatter="hasFeedbackStatusFormatter" data-cell-style="statusStyle">已反馈</th>
         <th data-field="hasConfirm" data-formatter="hasConfirmStatusFormatter" data-cell-style="statusStyle">确认</th>
       </tr>
       </thead>
@@ -66,9 +69,9 @@
   <script src="/bower_components/bootstrap-table/dist/bootstrap-table.min.js"></script>
   <script src="/bower_components/bootstrap-table/dist/locale/bootstrap-table-zh-CN.min.js"></script>
   <script src="/bower_components/bootstrap-table/dist/extensions/editable/bootstrap-table-editable.min.js"></script>
-  <script src="//rawgit.com/vitalets/x-editable/master/dist/bootstrap3-editable/js/bootstrap-editable.js"></script>
+  <script src="/bower_components/x-editable/dist/bootstrap3-editable/js/bootstrap-editable.js"></script>
   <script src="/bower_components/bootstrap-table/dist/extensions/export/bootstrap-table-export.min.js"></script>
-  <script src="//rawgit.com/hhurz/tableExport.jquery.plugin/master/tableExport.js"></script>
+  <script src="/javascripts/pc/tableExport.js"></script>
   <script src="/javascripts/pc/manage.js"></script>
   <script>
     var USER_ADMIN = '1';
@@ -81,6 +84,7 @@
       };
 
     function timeFormatter(timestamp) {
+      if (!timestamp) return '';
       var d = new Date(timestamp);
       return d.toLocaleDateString() + ' - ' + d.toLocaleTimeString();
     }
@@ -143,48 +147,63 @@
       };
     }
 
+    function escapeNullValue(val) {
+      if (val === undefined || val === null) return '';
+      return val;
+    }
+
     function detailFormatter(index, row) {
       var html = [];
-      html.push('<table>')
+      html.push('<table class="table">')
       html.push('<tr>')
-      html.push('  <td><strong>姓名：</strong>' + row.username + '</td>')
-      html.push('  <td><strong>电话：</strong>' + row.phone + '</td>')
+      html.push('  <td><strong>姓名：</strong>' + escapeNullValue(row.username) + '</td>')
+      html.push('  <td><strong>主类别：</strong>' + escapeNullValue(row.mainCat) + '</td>')
       html.push('</tr>')
       html.push('<tr>')
-      html.push('  <td><strong>主类别：</strong>' + row.mainCat + '</td>')
-      html.push('  <td><strong>次类别：</strong>' + row.subCat + '</td>')
+      html.push('  <td><strong>电话：</strong>' + escapeNullValue(row.phone) + '</td>')
+      html.push('  <td><strong>次类别：</strong>' + escapeNullValue(row.subCat) + '</td>')
       html.push('</tr>')
       html.push('<tr>')
       html.push('  <td colspan=2><strong>创建时间：</strong>' + timeFormatter(row.createTime) + '</td>')
       html.push('</tr>')
       html.push('<tr>')
-      html.push('  <td colspan=2><strong>描述：</strong>' + row.description + '</td>')
+      html.push('  <td colspan=2><strong>描述：</strong>' + escapeNullValue(row.description) + '</td>')
       html.push('</tr>')
-      html.push('<tr style="background:rgba(245, 245, 245, 0.52);">')
-      html.push('  <td colspan=2>')
-      row.imgPaths.forEach(function(path, i) {
-        html.push('  <img src="' + path.thumbnail + '" style="width:120px;height:120px;padding:10px;cursor:pointer;" data-toggle="modal" data-target="#'+path.userId+'"/>')
-        if (i === 0) {
-          html.push('  <div id="'+path.userId+'" class="modal fade bs-example-modal" tabindex="-1" role="dialog"><div class="modal-dialog" role="document"><div class="modal-content">')
-          html.push(genImageSlider(row.imgPaths));
-          html.push('  </div></div></div>');
+
+      if (row.imgPaths && row.imgPaths.length > 0) {
+        html.push('<tr style="background:rgba(245, 245, 245, 0.52);">')
+        html.push('  <td colspan=2>')
+        row.imgPaths.forEach(function(path, i) {
+          html.push('  <img src="' + path.thumbnail + '" style="width:120px;height:120px;margin-right:10px;cursor:pointer;" data-toggle="modal" data-target="#'+path.userId+'"/>')
+          if (i === 0) {
+            html.push('  <div id="'+path.userId+'" class="modal fade bs-example-modal" tabindex="-1" role="dialog"><div class="modal-dialog" role="document"><div class="modal-content">')
+            html.push(genImageSlider(row.imgPaths));
+            html.push('  </div></div></div>');
+          }
+        })
+        html.push('  </td>')
+        html.push('</tr>')
+      }
+
+      if (row.hasFeedback == 1) {
+        html.push('<tr>')
+        html.push('  <td colspan=2><strong>反馈：</strong>' + escapeNullValue(row.feedback) + '</td>')
+        html.push('</tr>')
+        if (row.feedbackImgPaths && row.feedbackImgPaths.length > 0) {
+          html.push('<tr>')
+          html.push('  <td colspan=2>')
+          row.feedbackImgPaths.forEach(function(path, i) {
+            html.push('  <img src="' + path.thumbnail + '" style="width:120px;height:120px;margin-right:10px;cursor:pointer;" data-toggle="modal" data-target="#'+path.userId+'"/>')
+            if (i === 0) {
+              html.push('  <div id="'+path.userId+'" class="modal fade bs-example-modal" tabindex="-1" role="dialog"><div class="modal-dialog" role="document"><div class="modal-content">')
+              html.push(genImageSlider(row.imgPaths));
+              html.push('  </div></div></div>');
+            }
+          })
+          html.push('  </td>')
+          html.push('</tr>')
         }
-      })
-      html.push('  </td>')
-      html.push('</tr>')
-      // if ((userType == USER_ADMIN && row.hasAuditAdmin == 0)
-      // || (userType == USER_LEAD && row.hasAuditLead == 0)) {
-      //   html.push('<tr>')
-      //   html.push('  <td colspan=2>')
-      //   html.push('    <button type="button" onclick="auditPass(\'' + row.id + '\')" data-loading-text="Loading..." class="btn btn-success" autocomplete="off" style="margin: 10px;">')
-      //   html.push('      审核通过');
-      //   html.push('    </button>')
-      //   html.push('    <button type="button" onclick="auditReject(\'' + row.id + '\')" data-loading-text="Loading..." class="btn btn-danger" autocomplete="off" style="margin: 10px;">')
-      //   html.push('      审核不通过');
-      //   html.push('    </button>')
-      //   html.push('  </td>')
-      //   html.push('</tr>')
-      // }
+      }
       return html.join('');
     }
 
