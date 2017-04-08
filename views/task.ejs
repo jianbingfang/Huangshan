@@ -147,7 +147,7 @@
         <div class="weui-cell">
           <div class="weui-cell__bd">
             <textarea id="input-description" <%= newTask ? '' : 'disabled' %> class="weui-textarea" placeholder="请输入文本" maxlength="200" rows="3"><%= task.description %></textarea>
-            <div class="weui-textarea-counter"><span id="description-length">0</span>/200</div>
+            <div class="weui-textarea-counter"><span id="description-length"><%= task.description ? task.description.length : 0 %></span>/200</div>
           </div>
         </div>
       </div>
@@ -165,7 +165,7 @@
         <div class="weui-cell">
           <div class="weui-cell__bd">
             <textarea id="input-feedback" <%= isFeedbackEditable ? '' : 'disabled' %> class="weui-textarea" placeholder="请输入文本" maxlength="200" rows="3"><%= task.feedback %></textarea>
-            <div class="weui-textarea-counter"><span id="feedback-length">0</span>/200</div>
+            <div class="weui-textarea-counter"><span id="feedback-length"><%= task.feedback ? task.feedback.length : 0 %></span>/200</div>
           </div>
         </div>
       </div>
