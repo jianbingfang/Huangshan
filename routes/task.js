@@ -131,7 +131,7 @@ router.post('/', function (req, res, next) {
 router.put('/updatestatus', function (req, res, next) {
   var taskId = req.body.pk;
   var prop = {};
-  prop[req.body.name] = req.body.value;
+  prop[req.body.name] = parseInt(req.body.value);
   var updatedTask = dbUtil.updateById(TABLE.Task, taskId, prop);
   res.send(updatedTask);
 });
