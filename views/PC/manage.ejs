@@ -156,7 +156,7 @@
         var disabled = true;
         if ((row.hasFeedback && name === 'hasConfirm')
           || (userType === USER_ADMIN && name === 'hasAuditAdmin' && row.hasAccept != 1)
-          || (userType === USER_LEAD && name === 'hasAuditLead' && row.hasAccept != 1)) {
+          || (userType === USER_LEAD && name === 'hasAuditLead' && row.hasAccept != 1 && row.hasAuditAdmin == 1)) {
           disabled = false;
         }
         return '<a href="#" class="audit-status" data-type="select" data-pk="'+row.id+'" data-name="'+name+'" data-url="/task/updatestatus" data-source="'+statusListStr+'" data-value="'+status+'" data-disabled="'+disabled+'" data-success="onStatusUpdateSuccess" data-title="审核状态"></a>';
