@@ -154,9 +154,9 @@
     function auditStatusFormatterGenerator(name) {
       return function(status, row, index) {
         var disabled = true;
-        if ( (row.hasFeedback && name === 'hasConfirm')
-          || (userType === USER_ADMIN && name === 'hasAuditAdmin')
-          || (userType === USER_LEAD && name === 'hasAuditLead')) {
+        if ((row.hasFeedback && name === 'hasConfirm')
+          || (userType === USER_ADMIN && name === 'hasAuditAdmin' && row.hasAccept != 1)
+          || (userType === USER_LEAD && name === 'hasAuditLead' && row.hasAccept != 1)) {
           disabled = false;
         }
         return '<a href="#" class="audit-status" data-type="select" data-pk="'+row.id+'" data-name="'+name+'" data-url="/task/updatestatus" data-source="'+statusListStr+'" data-value="'+status+'" data-disabled="'+disabled+'" data-success="onStatusUpdateSuccess" data-title="审核状态"></a>';
@@ -215,11 +215,11 @@
         html.push('<tr style="background:rgba(245, 245, 245, 0.52);">')
         html.push('  <td colspan=2>')
         row.imgPaths.forEach(function(path, i) {
-          html.push('<a href="#" class="thumbnail" data-toggle="modal" data-target="#'+path.userId+'">')
+          html.push('<a href="#" class="thumbnail" data-toggle="modal" data-target="#i-'+row.id+'">')
           html.push('  <img src="' + path.thumbnail + '" style="width:120px;height:120px;display:inline;"/>')
           html.push('</a>')
           if (i === 0) {
-            html.push('  <div id="'+path.userId+'" class="modal fade bs-example-modal" tabindex="-1" role="dialog"><div class="modal-dialog" role="document"><div class="modal-content">')
+            html.push('  <div id="i-'+row.id+'" class="modal fade bs-example-modal" tabindex="-1" role="dialog"><div class="modal-dialog" role="document"><div class="modal-content">')
             html.push(genImageSlider(row.imgPaths));
             html.push('  </div></div></div>');
           }
@@ -236,11 +236,11 @@
           html.push('<tr>')
           html.push('  <td colspan=2>')
           row.feedbackImgPaths.forEach(function(path, i) {
-          html.push('<a href="#" class="thumbnail" data-toggle="modal" data-target="#'+path.userId+'">')
+          html.push('<a href="#" class="thumbnail" data-toggle="modal" data-target="#fb-'+row.id+'">')
           html.push('  <img src="' + path.thumbnail + '" style="width:120px;height:120px;display:inline;"/>')
           html.push('</a>')
           if (i === 0) {
-            html.push('  <div id="'+path.userId+'" class="modal fade bs-example-modal" tabindex="-1" role="dialog"><div class="modal-dialog" role="document"><div class="modal-content">')
+            html.push('  <div id="fb-'+row.id+'" class="modal fade bs-example-modal" tabindex="-1" role="dialog"><div class="modal-dialog" role="document"><div class="modal-content">')
             html.push(genImageSlider(row.feedbackImgPaths));
             html.push('  </div></div></div>');
           }
