@@ -29,7 +29,9 @@
   <input id="userId" value="<%= user.userId%>" hidden disabled/>
   <div class="page" style="opacity: 1">
     <div class="page__bd">
-      <h1 style="margin: 10px;"><%= user.username%></h1>
+      <h1 style="margin: 10px;"><%= user.username%>
+        <a id="btn-refresh" href="javascript:;" class="weui-btn weui-btn_mini weui-btn_default" style="float: right;margin-top: 10px;">刷新</a>
+      </h1>
     </div>
     <div class="page__bd">
       <div class="button_sp_area">
@@ -100,7 +102,6 @@
   <script src="/javascripts/wechat/weixin.js"></script>
 
   <script>
-    
     $(function() {
       $("#hint-no_more").hide();
       $("#hint-loading").hide();
@@ -121,6 +122,10 @@
             $("#btn-load_more").remove();
           }
         });
+      });
+
+      $("#btn-refresh").on('click', function() {
+        location.reload();
       });
     });
   </script>
