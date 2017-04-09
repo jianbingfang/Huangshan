@@ -119,7 +119,7 @@
           <div class="weui-cell__bd">
             <div class="weui-uploader">
               <div class="weui-uploader__hd">
-                <p class="weui-uploader__title"><%= newTask ? '图片上传' : '图片' %></p>
+                <p class="weui-uploader__title"><%= newTask ? '照片上传' : '照片' %></p>
                 <% if (newTask) { %>
                 <div class="weui-uploader__info"><span id="img-count">0</span>/4</div>
                 <% } %>
@@ -132,7 +132,7 @@
                     <li class="weui-uploader__file" style="background-image:url(<%=imgPath.thumbnail || imgPath.original%>)"></li>
                     <% } %>
                   <% } else if (!newTask) { %>
-                    <div class="weui-cells__title">无图片</div>
+                    <div class="weui-cells__title">无照片</div>
                   <% } %>
                 </ul>
                 <% if (newTask) { %>
@@ -151,7 +151,9 @@
         <div class="weui-cell">
           <div class="weui-cell__bd">
             <textarea id="input-description" <%= newTask ? '' : 'disabled' %> class="weui-textarea" placeholder="请输入文本" maxlength="200" rows="3"><%= task.description %></textarea>
+            <% if (newTask) { %>
             <div class="weui-textarea-counter"><span id="description-length"><%= task.description ? task.description.length : 0 %></span>/200</div>
+            <% } %>
           </div>
         </div>
       </div>
@@ -169,7 +171,9 @@
         <div class="weui-cell">
           <div class="weui-cell__bd">
             <textarea id="input-feedback" <%= isFeedbackEditable ? '' : 'disabled' %> class="weui-textarea" placeholder="请输入文本" maxlength="200" rows="3"><%= task.feedback %></textarea>
+            <% if (isFeedbackEditable) { %>
             <div class="weui-textarea-counter"><span id="feedback-length"><%= task.feedback ? task.feedback.length : 0 %></span>/200</div>
+            <% } %>
           </div>
         </div>
       </div>
@@ -179,7 +183,7 @@
           <div class="weui-cell__bd">
             <div class="weui-uploader">
               <div class="weui-uploader__hd">
-                <p class="weui-uploader__title"><%= isFeedbackEditable ? '反馈图片上传' : '反馈图片' %></p>
+                <p class="weui-uploader__title"><%= isFeedbackEditable ? '反馈照片上传' : '反馈照片' %></p>
                 <% if (isFeedbackEditable) { %>
                 <div class="weui-uploader__info"><span id="feedback-img-count">0</span>/4</div>
                 <% } %>
@@ -192,7 +196,7 @@
                     <li class="weui-uploader__file" style="background-image:url(<%=imgPath.thumbnail || imgPath.original%>)"></li>
                     <% } %>
                   <% } else if (!isFeedbackEditable) { %>
-                    <div class="weui-cells__title">无图片</div>
+                    <div class="weui-cells__title">无照片</div>
                   <% } %>
                 </ul>
                 <% if (isFeedbackEditable) { %>
