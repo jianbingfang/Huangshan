@@ -4,12 +4,17 @@ var router = express.Router();
 var path = require('path');
 var wxUtil = require('../util/wxUtil');
 var dbUtil = require('../util/dbUtil');
+var util = require('../util/util');
 var download = require('download');
 var fs = require('fs');
 var moment = require('moment');
 var aguid = require('aguid');
 var mkpath = require('mkpath');
+var randomstring = require('randomstring');
 var Jimp = require('jimp');
+var Docxtemplater = require('docxtemplater');
+var JSZip = require('jszip');
+var ImageModule = require('docxtemplater-image-module');
 
 var TABLE = dbUtil.TABLE;
 
@@ -48,7 +53,18 @@ router.get('/:taskId?', function (req, res, next) {
 router.delete('/:taskId?', function (req, res, next) {
   var taskId = req.params.taskId;
   var deletedTask = dbUtil.removeById(TABLE.Task, taskId);
+  var imgList = _.union(deletedTask.imgPaths, deletedTask.feedbackImgPaths)
   res.send(deletedTask);
+  if (!_.isEmpty(imgList)) {
+    imgList.forEach(function (imgPath) {
+      if (fs.existsSync(imgPath.original)) {
+        fs.unlink(imgPath.original);
+      }
+      if (fs.existsSync(imgPath.thumbnail)) {
+        fs.unlink(imgPath.thumbnail);
+      }
+    });
+  }
 });
 
 router.post('/', function (req, res, next) {
@@ -174,6 +190,20 @@ router.put('/updatestatus', function (req, res, next) {
   prop[req.body.name] = parseInt(req.body.value);
   var updatedTask = dbUtil.updateById(TABLE.Task, taskId, prop);
   res.send(updatedTask);
+});
+
+router.get('/msword/:taskId', function (req, res, next) {
+  var taskId = req.params.taskId;
+  task = dbUtil.getById(TABLE.Task, taskId);
+  if (task) {
+    var noncestr = randomstring.generate(16);
+    var filename = `${noncestr}.docx`;
+    var outputPath = path.join(__dirname, '..', 'temp', 'docs', filename);
+    util.exportMsWord(task, outputPath);
+    res.sendFile(outputPath);
+  } else {
+    res.send(null);
+  }
 });
 
 module.exports = router;

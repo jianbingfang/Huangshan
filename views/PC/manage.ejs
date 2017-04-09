@@ -63,7 +63,7 @@
         <th data-field="hasAccept" data-formatter="hasAcceptStatusFormatter" data-cell-style="statusStyle">已接收</th>
         <th data-field="hasFeedback" data-formatter="hasFeedbackStatusFormatter" data-cell-style="statusStyle">已反馈</th>
         <th data-field="hasConfirm" data-formatter="hasConfirmStatusFormatter" data-cell-style="statusStyle">确认</th>
-        <th data-align="center" data-events="operateEvents" data-formatter="operateFormatter">操作</th>
+        <th data-align="center" data-width="60" data-events="operateEvents" data-formatter="operateFormatter">操作</th>
       </tr>
       </thead>
     </table>
@@ -115,7 +115,10 @@
 
     function operateFormatter(value, row, index) {
       return [
-        '<a class="remove" href="javascript:void(0)" title="Remove">',
+        '<a class="download" style="margin-right: 8px;" href="/task/msword/' + row.id + '" target="_blank" title="下载">',
+        '<i class="glyphicon glyphicon-download-alt"></i>',
+        '</a>',
+        '<a class="remove" href="javascript:void(0)" title="删除">',
         '<i class="glyphicon glyphicon-remove"></i>',
         '</a>'
       ].join('');
@@ -307,7 +310,6 @@
       html += '</div>'
       return html;
     }
-
   </script>
 </body>
 
