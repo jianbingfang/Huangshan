@@ -34,7 +34,11 @@
         <% } else if (task.hasAuditAdmin == 1 && task.hasAuditLead == 1) {%>
           <h1 style="padding: 0px 10px 0 15px;">
             <i class="weui-icon-info-circle" style="margin-top: -5px;"></i>
-            审核通过
+            <% if (task.hasAccept == 0) { %>
+            审核通过，待接收
+            <% } else { %>
+            进行中
+            <% } %>
             <% if (task.hasAccept == 0) { %>
             <a id="btn-accept-task" href="javascript:;" class="weui-btn weui-btn_mini weui-btn_primary" style="float: right;margin-top: 10px;">接收</a>
             <% } else if (task.hasFeedback == 1) {%>

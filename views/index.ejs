@@ -12,7 +12,7 @@
       font-weight: bold;
     }
     #task-list .status-pass {
-      background: lawngreen;
+      background: #59d258;
       font-weight: bold;
     }
     #task-list .status-reject {
@@ -47,9 +47,15 @@
                 未通过
               </div>
               <% } else if (task.hasAuditAdmin == 1 && task.hasAuditLead == 1) {%>
-              <div class="weui-media-box__hd status-pass">
-                通过
-              </div>
+              <%   if (task.hasAccept == 1) { %>
+                    <div class="weui-media-box__hd status-pass">
+                      进行中
+                    </div>
+              <%   } else {%>
+                    <div class="weui-media-box__hd status-pass">
+                      通过
+                    </div>
+              <%   } %>
               <% } else {%>
               <div class="weui-media-box__hd status-audit">
                 审核中
